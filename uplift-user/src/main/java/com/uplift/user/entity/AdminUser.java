@@ -9,41 +9,38 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * C端普通用户，每个 App 独立隔离
+ * 后台管理员，与 C端用户完全隔离
  */
 @Data
-@TableName("sys_user")
-public class User {
+@TableName("sys_admin")
+public class AdminUser {
 
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
-    /** 应用编码，关联 sys_app.code */
+    /** 应用编码，关联 sys_app.code（仅 appType=2 的后台应用） */
     private String appCode;
 
-    /** 用户名 */
+    /** 登录账号 */
     private String username;
 
     /** 密码（BCrypt） */
     private String password;
 
-    /** 昵称 */
-    private String nickname;
+    /** 姓名 */
+    private String realName;
 
     /** 手机号 */
     private String phone;
 
-    /** 邮笱 */
+    /** 邮箱 */
     private String email;
 
     /** 头像 */
     private String avatar;
 
-    /** 开放平台标识（微信/支付宝） */
-    private String openId;
-
-    /** 注册来源 1-手机 2-邮笱 3-微信 4-支付宝 */
-    private Integer registerSource;
+    /** 部门ID */
+    private Long deptId;
 
     /** 状态 0-禁用 1-启用 */
     private Integer status;
@@ -53,6 +50,10 @@ public class User {
 
     /** 最后登录时间 */
     private LocalDateTime lastLoginTime;
+
+    private Long createBy;
+
+    private Long updateBy;
 
     private LocalDateTime createTime;
 

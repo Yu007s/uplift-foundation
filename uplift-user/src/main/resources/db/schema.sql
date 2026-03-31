@@ -1,263 +1,181 @@
--- ============================================
--- Uplift User Center Database Schema
--- 用户中心数据库初始化脚本
--- ============================================
+-- ===========================================
+-- Uplift User Center - 多应用用户体系数据库设计
+-- 支持：AI鉴宝(jb-c/jb-admin) + 路径记录(lj-c/lj-admin)
+-- ===========================================
 
--- 创建数据库
-CREATE DATABASE IF NOT EXISTS uplift_user DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE uplift_user;
-
--- ============================================
--- 1. 租户表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_tenant (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '租户ID',
-    code VARCHAR(64) NOT NULL COMMENT '租户编码',
-    name VARCHAR(128) NOT NULL COMMENT '租户名称',
-    contact_name VARCHAR(64) DEFAULT NULL COMMENT '联系人',
-    contact_phone VARCHAR(32) DEFAULT NULL COMMENT '联系电话',
-    contact_email VARCHAR(128) DEFAULT NULL COMMENT '联系邮箱',
-    type TINYINT DEFAULT 1 COMMENT '租户类型 1-企业 2-个人',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    expire_time DATE DEFAULT NULL COMMENT '过期时间',
-    account_limit INT DEFAULT 100 COMMENT '账号数量限制',
-    remark VARCHAR(512) DEFAULT NULL COMMENT '备注',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_code (code),
-    KEY idx_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='租户表';
-
--- ============================================
--- 2. 用户表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_user (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-    tenant_id BIGINT DEFAULT NULL COMMENT '租户ID',
-    username VARCHAR(64) NOT NULL COMMENT '用户名',
-    password VARCHAR(128) NOT NULL COMMENT '密码',
-    nickname VARCHAR(64) DEFAULT NULL COMMENT '昵称',
-    real_name VARCHAR(64) DEFAULT NULL COMMENT '真实姓名',
-    phone VARCHAR(32) DEFAULT NULL COMMENT '手机号',
-    email VARCHAR(128) DEFAULT NULL COMMENT '邮箱',
-    avatar VARCHAR(512) DEFAULT NULL COMMENT '头像',
-    gender TINYINT DEFAULT 0 COMMENT '性别 0-未知 1-男 2-女',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用 2-锁定',
-    dept_id BIGINT DEFAULT NULL COMMENT '部门ID',
-    last_login_ip VARCHAR(64) DEFAULT NULL COMMENT '最后登录IP',
-    last_login_time DATETIME DEFAULT NULL COMMENT '最后登录时间',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    create_by BIGINT DEFAULT NULL COMMENT '创建人',
-    update_by BIGINT DEFAULT NULL COMMENT '更新人',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_username (username),
-    UNIQUE KEY uk_phone (phone),
-    UNIQUE KEY uk_email (email),
-    KEY idx_tenant_id (tenant_id),
-    KEY idx_status (status),
-    KEY idx_dept_id (dept_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
-
--- ============================================
--- 3. 角色表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_role (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '角色ID',
-    tenant_id BIGINT DEFAULT NULL COMMENT '租户ID',
-    code VARCHAR(64) NOT NULL COMMENT '角色编码',
-    name VARCHAR(64) NOT NULL COMMENT '角色名称',
-    data_scope TINYINT DEFAULT 1 COMMENT '数据权限范围 1-全部 2-本部门 3-本部门及子部门 4-仅本人 5-自定义',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    sort INT DEFAULT 0 COMMENT '排序',
-    remark VARCHAR(512) DEFAULT NULL COMMENT '备注',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_code (code),
-    KEY idx_tenant_id (tenant_id),
-    KEY idx_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
-
--- ============================================
--- 4. 菜单/权限表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_menu (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
-    parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
-    name VARCHAR(64) NOT NULL COMMENT '菜单名称',
-    path VARCHAR(256) DEFAULT NULL COMMENT '路由路径',
-    component VARCHAR(256) DEFAULT NULL COMMENT '组件路径',
-    permission VARCHAR(256) DEFAULT NULL COMMENT '权限标识',
-    type TINYINT DEFAULT 1 COMMENT '菜单类型 1-目录 2-菜单 3-按钮',
-    icon VARCHAR(128) DEFAULT NULL COMMENT '图标',
-    sort INT DEFAULT 0 COMMENT '排序',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    hidden TINYINT DEFAULT 0 COMMENT '是否隐藏 0-显示 1-隐藏',
-    keep_alive TINYINT DEFAULT 0 COMMENT '是否缓存 0-不缓存 1-缓存',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    KEY idx_parent_id (parent_id),
-    KEY idx_status (status),
-    KEY idx_type (type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表';
-
--- ============================================
--- 5. 用户角色关联表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_user_role (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    user_id BIGINT NOT NULL COMMENT '用户ID',
-    role_id BIGINT NOT NULL COMMENT '角色ID',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_user_role (user_id, role_id),
-    KEY idx_user_id (user_id),
-    KEY idx_role_id (role_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
-
--- ============================================
--- 6. 角色菜单关联表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_role_menu (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    role_id BIGINT NOT NULL COMMENT '角色ID',
-    menu_id BIGINT NOT NULL COMMENT '菜单ID',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_role_menu (role_id, menu_id),
-    KEY idx_role_id (role_id),
-    KEY idx_menu_id (menu_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
-
--- ============================================
--- 7. 部门表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_dept (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '部门ID',
-    parent_id BIGINT DEFAULT 0 COMMENT '父部门ID',
-    tenant_id BIGINT DEFAULT NULL COMMENT '租户ID',
-    name VARCHAR(64) NOT NULL COMMENT '部门名称',
-    code VARCHAR(64) DEFAULT NULL COMMENT '部门编码',
-    sort INT DEFAULT 0 COMMENT '排序',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    KEY idx_parent_id (parent_id),
-    KEY idx_tenant_id (tenant_id),
-    KEY idx_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='部门表';
-
--- ============================================
--- 8. 岗位表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_post (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '岗位ID',
-    tenant_id BIGINT DEFAULT NULL COMMENT '租户ID',
-    code VARCHAR(64) NOT NULL COMMENT '岗位编码',
-    name VARCHAR(64) NOT NULL COMMENT '岗位名称',
-    sort INT DEFAULT 0 COMMENT '排序',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    remark VARCHAR(512) DEFAULT NULL COMMENT '备注',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_code (code),
-    KEY idx_tenant_id (tenant_id),
-    KEY idx_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='岗位表';
-
--- ============================================
--- 9. 用户岗位关联表
--- ============================================
-CREATE TABLE IF NOT EXISTS sys_user_post (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    user_id BIGINT NOT NULL COMMENT '用户ID',
-    post_id BIGINT NOT NULL COMMENT '岗位ID',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (id),
-    UNIQUE KEY uk_user_post (user_id, post_id),
-    KEY idx_user_id (user_id),
-    KEY idx_post_id (post_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户岗位关联表';
-
--- ============================================
--- 10. 应用表（支持多应用接入）
--- ============================================
+-- 应用表
 CREATE TABLE IF NOT EXISTS sys_app (
-    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '应用ID',
-    tenant_id BIGINT DEFAULT NULL COMMENT '租户ID',
-    code VARCHAR(64) NOT NULL COMMENT '应用编码',
-    name VARCHAR(128) NOT NULL COMMENT '应用名称',
-    secret VARCHAR(256) NOT NULL COMMENT '应用密钥',
-    icon VARCHAR(512) DEFAULT NULL COMMENT '应用图标',
-    url VARCHAR(512) DEFAULT NULL COMMENT '应用地址',
-    callback_url VARCHAR(512) DEFAULT NULL COMMENT '回调地址',
-    type TINYINT DEFAULT 1 COMMENT '应用类型 1-Web 2-APP 3-小程序',
-    status TINYINT DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
-    expire_time DATE DEFAULT NULL COMMENT '过期时间',
-    remark VARCHAR(512) DEFAULT NULL COMMENT '备注',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    deleted TINYINT DEFAULT 0 COMMENT '删除标志 0-未删除 1-已删除',
-    PRIMARY KEY (id),
+    id BIGINT NOT NULL PRIMARY KEY COMMENT '应用ID',
+    code VARCHAR(32) NOT NULL COMMENT '应用编码，如 jb-c / jb-admin / lj-c / lj-admin',
+    name VARCHAR(64) NOT NULL COMMENT '应用名称',
+    company_id INT NOT NULL DEFAULT 1 COMMENT '所属公司 1-AI鉴宝 2-路径记录',
+    app_type INT NOT NULL DEFAULT 1 COMMENT '应用类型 1-C端 2-后台管理',
+    app_secret VARCHAR(128) COMMENT '应用密钥',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
+    remark VARCHAR(255) COMMENT '备注',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0,
     UNIQUE KEY uk_code (code),
-    KEY idx_tenant_id (tenant_id),
-    KEY idx_status (status)
+    INDEX idx_company (company_id),
+    INDEX idx_type (app_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用表';
 
--- ============================================
--- 初始化数据
--- ============================================
+-- C端用户表（按 app_code 隔离）
+CREATE TABLE IF NOT EXISTS sys_user (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT '用户ID',
+    app_code VARCHAR(32) NOT NULL COMMENT '应用编码',
+    username VARCHAR(64) COMMENT '用户名',
+    password VARCHAR(128) COMMENT '密码（BCrypt加密）',
+    nickname VARCHAR(64) COMMENT '昵称',
+    phone VARCHAR(20) COMMENT '手机号',
+    email VARCHAR(64) COMMENT '邮箱',
+    avatar VARCHAR(255) COMMENT '头像URL',
+    open_id VARCHAR(64) COMMENT '开放平台标识（微信/支付宝）',
+    register_source INT DEFAULT 1 COMMENT '注册来源 1-手机 2-邮箱 3-微信 4-支付宝',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
+    last_login_ip VARCHAR(64) COMMENT '最后登录IP',
+    last_login_time DATETIME COMMENT '最后登录时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0,
+    UNIQUE KEY uk_app_username (app_code, username),
+    UNIQUE KEY uk_app_phone (app_code, phone),
+    INDEX idx_app_code (app_code),
+    INDEX idx_open_id (open_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='C端用户表';
 
--- 初始化租户
-INSERT INTO sys_tenant (id, code, name, type, status, account_limit) VALUES
-(1, 'default', '默认租户', 1, 1, 1000);
+-- 后台管理员表（按 app_code 隔离）
+CREATE TABLE IF NOT EXISTS sys_admin (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT '管理员ID',
+    app_code VARCHAR(32) NOT NULL COMMENT '应用编码（仅后台应用）',
+    username VARCHAR(64) NOT NULL COMMENT '登录账号',
+    password VARCHAR(128) NOT NULL COMMENT '密码（BCrypt加密）',
+    real_name VARCHAR(64) COMMENT '姓名',
+    phone VARCHAR(20) COMMENT '手机号',
+    email VARCHAR(64) COMMENT '邮箱',
+    avatar VARCHAR(255) COMMENT '头像',
+    dept_id BIGINT COMMENT '部门ID',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
+    last_login_ip VARCHAR(64) COMMENT '最后登录IP',
+    last_login_time DATETIME COMMENT '最后登录时间',
+    create_by BIGINT COMMENT '创建人',
+    update_by BIGINT COMMENT '更新人',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0,
+    UNIQUE KEY uk_app_username (app_code, username),
+    INDEX idx_app_code (app_code),
+    INDEX idx_dept (dept_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台管理员表';
+
+-- 角色表（按 app_code 隔离）
+CREATE TABLE IF NOT EXISTS sys_role (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT '角色ID',
+    app_code VARCHAR(32) NOT NULL COMMENT '应用编码',
+    code VARCHAR(64) NOT NULL COMMENT '角色编码',
+    name VARCHAR(64) NOT NULL COMMENT '角色名称',
+    role_type INT NOT NULL DEFAULT 1 COMMENT '角色类型 1-C端角色 2-后台角色',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
+    sort INT DEFAULT 0 COMMENT '排序',
+    remark VARCHAR(255) COMMENT '备注',
+    create_by BIGINT COMMENT '创建人',
+    update_by BIGINT COMMENT '更新人',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0,
+    UNIQUE KEY uk_app_code (app_code, code),
+    INDEX idx_app_type (app_code, role_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
+
+-- 权限表（菜单+按钮+接口）
+CREATE TABLE IF NOT EXISTS sys_permission (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT '权限ID',
+    app_code VARCHAR(32) NOT NULL COMMENT '应用编码',
+    parent_id BIGINT NOT NULL DEFAULT 0 COMMENT '父级ID，顶级为0',
+    name VARCHAR(64) NOT NULL COMMENT '权限名称',
+    code VARCHAR(128) COMMENT '权限编码，如 user:list、user:add',
+    perm_type INT NOT NULL DEFAULT 1 COMMENT '权限类型 1-菜单 2-按钮 3-接口',
+    path VARCHAR(128) COMMENT '路由路径（菜单类型）',
+    component VARCHAR(128) COMMENT '前端组件（菜单类型）',
+    icon VARCHAR(64) COMMENT '图标',
+    sort INT DEFAULT 0 COMMENT '排序',
+    hidden TINYINT DEFAULT 0 COMMENT '是否隐藏 0-显示 1-隐藏',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态 0-禁用 1-启用',
+    create_by BIGINT COMMENT '创建人',
+    update_by BIGINT COMMENT '更新人',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted TINYINT NOT NULL DEFAULT 0,
+    INDEX idx_app_code (app_code),
+    INDEX idx_parent (parent_id),
+    INDEX idx_type (perm_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限表';
+
+-- C端用户角色关联
+CREATE TABLE IF NOT EXISTS sys_user_role (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT 'ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    UNIQUE KEY uk_user_role (user_id, role_id),
+    INDEX idx_user (user_id),
+    INDEX idx_role (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='C端用户角色关联';
+
+-- 管理员角色关联
+CREATE TABLE IF NOT EXISTS sys_admin_role (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT 'ID',
+    admin_id BIGINT NOT NULL COMMENT '管理员ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    UNIQUE KEY uk_admin_role (admin_id, role_id),
+    INDEX idx_admin (admin_id),
+    INDEX idx_role (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员角色关联';
+
+-- 角色权限关联
+CREATE TABLE IF NOT EXISTS sys_role_permission (
+    id BIGINT NOT NULL PRIMARY KEY COMMENT 'ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    permission_id BIGINT NOT NULL COMMENT '权限ID',
+    UNIQUE KEY uk_role_perm (role_id, permission_id),
+    INDEX idx_role (role_id),
+    INDEX idx_perm (permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色权限关联';
+
+-- ===========================================
+-- 初始化数据
+-- ===========================================
+
+-- 初始化应用
+INSERT INTO sys_app (id, code, name, company_id, app_type, status, remark) VALUES
+(1, 'jb-c', 'AI鉴宝C端', 1, 1, 1, 'AI鉴宝小程序/APP'),
+(2, 'jb-admin', 'AI鉴宝后台', 1, 2, 1, 'AI鉴宝后台管理系统'),
+(3, 'lj-c', '路径记录C端', 2, 1, 1, '路径记录小程序/APP'),
+(4, 'lj-admin', '路径记录后台', 2, 2, 1, '路径记录后台管理系统');
 
 -- 初始化角色
-INSERT INTO sys_role (id, tenant_id, code, name, data_scope, status, sort) VALUES
-(1, 1, 'super_admin', '超级管理员', 1, 1, 1),
-(2, 1, 'admin', '管理员', 2, 1, 2),
-(3, 1, 'user', '普通用户', 4, 1, 3);
+INSERT INTO sys_role (id, app_code, code, name, role_type, status, sort, remark) VALUES
+-- AI鉴宝C端角色
+(1, 'jb-c', 'user', '普通用户', 1, 1, 1, '默认注册用户'),
+(2, 'jb-c', 'vip', 'VIP用户', 1, 1, 2, '付费会员'),
+-- AI鉴宝后台角色
+(3, 'jb-admin', 'super_admin', '超级管理员', 2, 1, 1, '拥有所有权限'),
+(4, 'jb-admin', 'admin', '管理员', 2, 1, 2, '日常运营'),
+(5, 'jb-admin', 'operator', '运营人员', 2, 1, 3, '内容运营'),
+-- 路径记录C端角色
+(6, 'lj-c', 'user', '普通用户', 1, 1, 1, '默认注册用户'),
+(7, 'lj-c', 'vip', 'VIP用户', 1, 1, 2, '付费会员'),
+-- 路径记录后台角色
+(8, 'lj-admin', 'super_admin', '超级管理员', 2, 1, 1, '拥有所有权限'),
+(9, 'lj-admin', 'admin', '管理员', 2, 1, 2, '日常运营'),
+(10, 'lj-admin', 'operator', '运营人员', 2, 1, 3, '内容运营');
 
--- 初始化菜单
-INSERT INTO sys_menu (id, parent_id, name, path, component, permission, type, icon, sort, status) VALUES
-(1, 0, '系统管理', '/system', NULL, NULL, 1, 'SettingOutlined', 1, 1),
-(2, 1, '用户管理', '/system/user', 'system/user/index', 'system:user:list', 2, 'UserOutlined', 1, 1),
-(3, 2, '用户查询', NULL, NULL, 'system:user:query', 3, NULL, 1, 1),
-(4, 2, '用户新增', NULL, NULL, 'system:user:add', 3, NULL, 2, 1),
-(5, 2, '用户修改', NULL, NULL, 'system:user:edit', 3, NULL, 3, 1),
-(6, 2, '用户删除', NULL, NULL, 'system:user:delete', 3, NULL, 4, 1),
-(7, 1, '角色管理', '/system/role', 'system/role/index', 'system:role:list', 2, 'TeamOutlined', 2, 1),
-(8, 7, '角色查询', NULL, NULL, 'system:role:query', 3, NULL, 1, 1),
-(9, 7, '角色新增', NULL, NULL, 'system:role:add', 3, NULL, 2, 1),
-(10, 7, '角色修改', NULL, NULL, 'system:role:edit', 3, NULL, 3, 1),
-(11, 7, '角色删除', NULL, NULL, 'system:role:delete', 3, NULL, 4, 1);
+-- 初始化超级管理员（密码：admin123，BCrypt加密）
+INSERT INTO sys_admin (id, app_code, username, password, real_name, status) VALUES
+(1, 'jb-admin', 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EO', '超级管理员', 1),
+(2, 'lj-admin', 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EO', '超级管理员', 1);
 
--- 初始化部门
-INSERT INTO sys_dept (id, parent_id, tenant_id, name, code, status, sort) VALUES
-(1, 0, 1, '总部', 'HQ', 1, 1),
-(2, 1, 1, '技术部', 'TECH', 1, 1),
-(3, 1, 1, '市场部', 'MKT', 1, 2);
-
--- 初始化超级管理员用户 (密码: 123456)
-INSERT INTO sys_user (id, tenant_id, username, password, nickname, real_name, phone, email, gender, status, dept_id) VALUES
-(1, 1, 'admin', 'e10adc3949ba59abbe56e057f20f883e', '超级管理员', '管理员', '13800138000', 'admin@uplift.com', 1, 1, 1);
-
--- 关联用户角色
-INSERT INTO sys_user_role (user_id, role_id) VALUES
-(1, 1);
-
--- 关联角色菜单（超级管理员拥有所有权限）
-INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11);
+-- 关联超级管理员角色
+INSERT INTO sys_admin_role (id, admin_id, role_id) VALUES
+(1, 1, 3),
+(2, 2, 8);

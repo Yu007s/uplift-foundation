@@ -9,39 +9,40 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 角色表，每个 App 独立维护自己的角色
+ * 应用表 - 每个子公司的每个系统对应一条记录
+ * 示例数据：
+ *   code=jb-c      name=AI鉴宝C端
+ *   code=jb-admin  name=AI鉴宝后台
+ *   code=lj-c      name=路径记录C端
+ *   code=lj-admin  name=路径记录后台
  */
 @Data
-@TableName("sys_role")
-public class Role {
+@TableName("sys_app")
+public class App {
 
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
-    /** 应用编码 */
-    private String appCode;
-
-    /** 角色编码 */
+    /** 应用唯一编码，登录时由客户端传入 */
     private String code;
 
-    /** 角色名称 */
+    /** 应用名称 */
     private String name;
 
-    /** 角色类型 1-C端角色 2-后台角色 */
-    private Integer roleType;
+    /** 所属公司 1-AI鉴宝 2-路径记录 */
+    private Integer companyId;
+
+    /** 应用类型 1-C端 2-后台管理 */
+    private Integer appType;
+
+    /** 应用密钥（接口鉴权用） */
+    private String appSecret;
 
     /** 状态 0-禁用 1-启用 */
     private Integer status;
 
-    /** 排序 */
-    private Integer sort;
-
     /** 备注 */
     private String remark;
-
-    private Long createBy;
-
-    private Long updateBy;
 
     private LocalDateTime createTime;
 

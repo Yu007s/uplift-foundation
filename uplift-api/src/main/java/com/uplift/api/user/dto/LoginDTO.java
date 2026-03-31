@@ -14,35 +14,30 @@ public class LoginDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 应用ID
+     * 应用编码，客户端必须传入，如 jb-c / jb-admin / lj-c / lj-admin
      */
-    private Long appId;
+    @NotBlank(message = "应用编码不能为空")
+    private String appCode;
 
     /**
-     * 租户编码
-     */
-    private String tenantCode;
-
-    /**
-     * 登录类型：password/sms/email/wechat/qq
+     * 登录类型：password / sms / email / wechat
      */
     @NotBlank(message = "登录类型不能为空")
     private String loginType;
 
     /**
-     * 用户名/手机号/邮箱
+     * 用户名 / 手机号 / 邮笱
      */
     @NotBlank(message = "账号不能为空")
     private String account;
 
     /**
-     * 密码/验证码
+     * 密码 / 验证码
      */
-    @NotBlank(message = "凭证不能为空")
     private String credential;
 
     /**
-     * 验证码Key
+     * 验证码 Key
      */
     private String captchaKey;
 

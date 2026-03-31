@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.uplift.api.user.dto.LoginDTO;
 import com.uplift.api.user.dto.TokenDTO;
 import com.uplift.common.result.Result;
+import com.uplift.user.service.AdminUserService;
+import com.uplift.user.service.AppService;
 import com.uplift.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * 认证控制器
+ * 统一认证控制器
+ * 通过 appCode 自动识别 C端还是后台登录
  */
 @RestController
 @RequestMapping("/api/user/auth")
@@ -25,23 +25,39 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final AdminUserService adminUserService;
+    private final AppService appService;
 
     /**
-     * 用户登录
+     * 统一登录入口
+     * 客户端传入 appCode 区分系统：
+     *   C端：  jb-c / lj-c
+     *   后台：  jb-admin / lj-admin
      */
     @PostMapping("/login")
     public Result<TokenDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
-        TokenDTO tokenDTO = userService.login(loginDTO);
+        // 校验 app 是否合法
+        appService.validateApp(loginDTO.getAppCode());
+
+        // 根据 appCode 判断路由到哪个用户体系
+        int appType = appService.getAppType(loginDTO.getAppCode());
+        TokenDTO tokenDTO;
+        if (appType == 1) {
+            // C端用户登录
+            tokenDTO = userService.login(loginDTO);
+        } else {
+            // 后台管理员登录
+            tokenDTO = adminUserService.login(loginDTO);
+        }
         return Result.success(tokenDTO);
     }
 
     /**
-     * 用户登出
+     * 登出
      */
     @PostMapping("/logout")
     public Result<Void> logout() {
-        Long userId = StpUtil.getLoginIdAsLong();
-        userService.logout(userId);
+        StpUtil.logout();
         return Result.success();
     }
 
@@ -49,13 +65,9 @@ public class AuthController {
      * 获取当前登录用户信息
      */
     @GetMapping("/info")
-    public Result<Map<String, Object>> getLoginInfo() {
-        Map<String, Object> info = new HashMap<>();
-        info.put("userId", StpUtil.getLoginIdAsLong());
-        info.put("token", StpUtil.getTokenValue());
-        info.put("tokenTimeout", StpUtil.getTokenTimeout());
-        info.put("sessionTimeout", StpUtil.getSessionTimeout());
-        return Result.success(info);
+    public Result<Object> getLoginInfo() {
+        StpUtil.checkLogin();
+        return Result.success(StpUtil.getTokenSession().get("userId"));
     }
 
     /**
