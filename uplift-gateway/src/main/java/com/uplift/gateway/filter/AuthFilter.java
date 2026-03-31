@@ -32,6 +32,8 @@ public class AuthFilter {
                             .notMatch("/api/user/auth/login", "/api/user/auth/register", "/api/user/auth/captcha")
                             // 健康检查放行
                             .notMatch("/health", "/actuator/**")
+                            // GoStep 健康检查放行
+                            .notMatch("/api/gostep/health")
                             // 检查登录
                             .check(() -> StpUtil.checkLogin());
                 })
