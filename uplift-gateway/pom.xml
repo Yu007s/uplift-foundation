@@ -20,6 +20,13 @@
         <dependency>
             <groupId>com.uplift.foundation</groupId>
             <artifactId>uplift-common</artifactId>
+            <exclusions>
+                <!-- 排除 Servlet 版 Sa-Token，网关使用 Reactor 版 -->
+                <exclusion>
+                    <groupId>cn.dev33</groupId>
+                    <artifactId>sa-token-spring-boot3-starter</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <!-- Gateway -->
