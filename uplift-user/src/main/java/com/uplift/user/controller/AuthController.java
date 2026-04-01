@@ -2,6 +2,7 @@ package com.uplift.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.uplift.api.user.dto.LoginDTO;
+import com.uplift.api.user.dto.RegisterDTO;
 import com.uplift.api.user.dto.TokenDTO;
 import com.uplift.common.result.Result;
 import com.uplift.user.service.AdminUserService;
@@ -31,8 +32,8 @@ public class AuthController {
     /**
      * 统一登录入口
      * 客户端传入 appCode 区分系统：
-     *   C端：  jb-c / lj-c
-     *   后台：  jb-admin / lj-admin
+     *   C端：  jb-c / gostep-c
+     *   后台：  jb-admin / gostep-admin
      */
     @PostMapping("/login")
     public Result<TokenDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
@@ -49,6 +50,15 @@ public class AuthController {
             // 后台管理员登录
             tokenDTO = adminUserService.login(loginDTO);
         }
+        return Result.success(tokenDTO);
+    }
+
+    /**
+     * C端用户注册
+     */
+    @PostMapping("/register")
+    public Result<TokenDTO> register(@Valid @RequestBody RegisterDTO registerDTO) {
+        TokenDTO tokenDTO = userService.register(registerDTO);
         return Result.success(tokenDTO);
     }
 

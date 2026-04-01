@@ -2,6 +2,7 @@ package com.uplift.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.uplift.api.user.dto.LoginDTO;
+import com.uplift.api.user.dto.RegisterDTO;
 import com.uplift.api.user.dto.TokenDTO;
 import com.uplift.user.entity.User;
 
@@ -14,6 +15,9 @@ public interface UserService extends IService<User> {
 
     /** C端用户登录 */
     TokenDTO login(LoginDTO loginDTO);
+
+    /** C端用户注册 */
+    TokenDTO register(RegisterDTO registerDTO);
 
     /** 登出 */
     void logout(Long userId, String appCode);

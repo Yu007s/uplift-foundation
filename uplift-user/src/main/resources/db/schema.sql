@@ -1,12 +1,12 @@
 -- ===========================================
 -- Uplift User Center - 多应用用户体系数据库设计
--- 支持：AI鉴宝(jb-c/jb-admin) + 路径记录(lj-c/lj-admin)
+-- 支持：AI鉴宝(jb-c/jb-admin) + 路径记录(gostep-c/gostep-admin)
 -- ===========================================
 
 -- 应用表
 CREATE TABLE IF NOT EXISTS sys_app (
     id BIGINT NOT NULL PRIMARY KEY COMMENT '应用ID',
-    code VARCHAR(32) NOT NULL COMMENT '应用编码，如 jb-c / jb-admin / lj-c / lj-admin',
+    code VARCHAR(32) NOT NULL COMMENT '应用编码，如 jb-c / jb-admin / gostep-c / gostep-admin',
     name VARCHAR(64) NOT NULL COMMENT '应用名称',
     company_id INT NOT NULL DEFAULT 1 COMMENT '所属公司 1-AI鉴宝 2-路径记录',
     app_type INT NOT NULL DEFAULT 1 COMMENT '应用类型 1-C端 2-后台管理',
@@ -150,8 +150,8 @@ CREATE TABLE IF NOT EXISTS sys_role_permission (
 INSERT INTO sys_app (id, code, name, company_id, app_type, status, remark) VALUES
 (1, 'jb-c', 'AI鉴宝C端', 1, 1, 1, 'AI鉴宝小程序/APP'),
 (2, 'jb-admin', 'AI鉴宝后台', 1, 2, 1, 'AI鉴宝后台管理系统'),
-(3, 'lj-c', '路径记录C端', 2, 1, 1, '路径记录小程序/APP'),
-(4, 'lj-admin', '路径记录后台', 2, 2, 1, '路径记录后台管理系统');
+(3, 'gostep-c', '路径记录C端', 2, 1, 1, '路径记录小程序/APP'),
+(4, 'gostep-admin', '路径记录后台', 2, 2, 1, '路径记录后台管理系统');
 
 -- 初始化角色
 INSERT INTO sys_role (id, app_code, code, name, role_type, status, sort, remark) VALUES
@@ -163,17 +163,17 @@ INSERT INTO sys_role (id, app_code, code, name, role_type, status, sort, remark)
 (4, 'jb-admin', 'admin', '管理员', 2, 1, 2, '日常运营'),
 (5, 'jb-admin', 'operator', '运营人员', 2, 1, 3, '内容运营'),
 -- 路径记录C端角色
-(6, 'lj-c', 'user', '普通用户', 1, 1, 1, '默认注册用户'),
-(7, 'lj-c', 'vip', 'VIP用户', 1, 1, 2, '付费会员'),
+(6, 'gostep-c', 'user', '普通用户', 1, 1, 1, '默认注册用户'),
+(7, 'gostep-c', 'vip', 'VIP用户', 1, 1, 2, '付费会员'),
 -- 路径记录后台角色
-(8, 'lj-admin', 'super_admin', '超级管理员', 2, 1, 1, '拥有所有权限'),
-(9, 'lj-admin', 'admin', '管理员', 2, 1, 2, '日常运营'),
-(10, 'lj-admin', 'operator', '运营人员', 2, 1, 3, '内容运营');
+(8, 'gostep-admin', 'super_admin', '超级管理员', 2, 1, 1, '拥有所有权限'),
+(9, 'gostep-admin', 'admin', '管理员', 2, 1, 2, '日常运营'),
+(10, 'gostep-admin', 'operator', '运营人员', 2, 1, 3, '内容运营');
 
 -- 初始化超级管理员（密码：admin123，BCrypt加密）
 INSERT INTO sys_admin (id, app_code, username, password, real_name, status) VALUES
 (1, 'jb-admin', 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EO', '超级管理员', 1),
-(2, 'lj-admin', 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EO', '超级管理员', 1);
+(2, 'gostep-admin', 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EO', '超级管理员', 1);
 
 -- 关联超级管理员角色
 INSERT INTO sys_admin_role (id, admin_id, role_id) VALUES

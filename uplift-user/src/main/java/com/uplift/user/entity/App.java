@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
  * 示例数据：
  *   code=jb-c      name=AI鉴宝C端
  *   code=jb-admin  name=AI鉴宝后台
- *   code=lj-c      name=路径记录C端
- *   code=lj-admin  name=路径记录后台
+ *   code=gostep-c      name=路径记录C端
+ *   code=gostep-admin  name=路径记录后台
  */
 @Data
 @TableName("sys_app")

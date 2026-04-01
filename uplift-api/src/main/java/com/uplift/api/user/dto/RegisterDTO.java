@@ -6,10 +6,10 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 登录请求 DTO
+ * 注册请求 DTO
  */
 @Data
-public class LoginDTO implements Serializable {
+public class RegisterDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -20,29 +20,30 @@ public class LoginDTO implements Serializable {
     private String appCode;
 
     /**
-     * 登录类型：password / sms / email / wechat
+     * 用户名
      */
-    @NotBlank(message = "登录类型不能为空")
-    private String loginType;
+    @NotBlank(message = "用户名不能为空")
+    private String username;
 
     /**
-     * 用户名 / 手机号 / 邮笱
+     * 密码
      */
-    @NotBlank(message = "账号不能为空")
-    private String account;
+    @NotBlank(message = "密码不能为空")
+    private String password;
 
     /**
-     * 密码 / 验证码
+     * 确认密码
      */
-    private String credential;
+    @NotBlank(message = "确认密码不能为空")
+    private String confirmPassword;
 
     /**
-     * 验证码 Key
+     * 手机号
      */
-    private String captchaKey;
+    private String phone;
 
     /**
-     * 验证码
+     * 昵称
      */
-    private String captchaCode;
+    private String nickname;
 }
